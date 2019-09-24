@@ -14,5 +14,5 @@
 熟悉AWVS、SQLMap、Burp、Nessus、NMap、chopper等工具的使用方法；
 3.熟悉Windows/Kali操作系统  
 熟悉Windows/Kali linux操作系统的基本命令、常用工具；
-4.渗透实战操作  
+4.学习渗透实战操作  
 掌握渗透的整个阶段并能够独立渗透小型站点。
