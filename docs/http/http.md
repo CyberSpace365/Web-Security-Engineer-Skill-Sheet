@@ -14,7 +14,7 @@ URL（统一资源定位符）也被成为网页地址，是互联网标准的�
 URL的标准格式如下：`协议://服务器IP[:端口]/路径/[?查询]`  
  例如，`http://www.baidu.com/index.html` 就是一个标准的URL。  
 
-### 1.2 HTTP协议详解  
+### 1.2 HTTP协议版本介绍  
 
 HTTP 协议是互联网的基础协议，也是网页开发的必备知识，最新版本 HTTP/2 更是让它成为技术热点。  
 
@@ -268,3 +268,228 @@ HTTP/2 对这一点做了优化，引入了头信息压缩机制（header compre
 
 HTTP/2 允许服务器未经请求，主动向客户端发送资源，这叫做服务器推送（server push）。  
 常见场景是客户端请求一个网页，这个网页里面包含很多静态资源。正常情况下，客户端必须收到网页后，解析HTML源码，发现有静态资源，再发出静态资源请求。其实，服务器可以预期到客户端请求网页后，很可能会再请求静态资源，所以就主动把这些静态资源随着网页一起发给客户端了。
+
+### 1.3 HTTP协议详解
+
+HTTP遵循请求（Request）/应答（Response）模型，Web浏览器向Web服务器发送请求时，Web服务器处理请求并返回适当的应答。
+
+#### 1.3.1 HTTP请求与响应
+
+（1）**HTTP请求**  
+HTTP请求包括三部分，分别是请求行（请求方法）、请求头（消息报头）和请求正文。下面是HTTP请求的一个例子。
+
+``` http
+POST /login.php HTTP/1.1      //请求行
+HOST:www.baidu.com           //请求头
+User-Agent:Mozilla/5.0(Windows NT 6.1;rv:15.0 Gecko/20190101 Firefox/15.0)  
+                              //空白行，代表请求头结束
+Username=admin&password=admin //请求正文
+```
+
+HTTP请求行的第一行即为请求行，请求行由三部分组成，该行的第一部分说明了该请求是POST请求；该行的第二部分是一个斜杠（/login.php），用来说明请求的是该域名目录下的login.php；该行的最后一部分说明使用的是HTTP1.1版本（另一个可选项是1.0）。  
+第二行至空白行为HTTP中的请求头（也被称为消息头）。其中，HOST代表请求的主机地址，User-Agent代表浏览器的标识。请求头由客户端自行设定。关于消息头的内容，在后面章节中将会详细介绍。  
+HTTP请求的最后一行为请求正文，请求正文是可选的，它最常出现在POST请求方法中。
+
+（2）**HTTP响应**  
+与HTTP请求对应的是HTTP响应，HTTP响应也由三部分内容组成，分别是响应行、响应头（消息报头）和响应正文（消息主题）。下面是一个经典的HTTP响应。
+
+``` http
+HTTP/1.1 200 OK                         //响应行
+Date:Thu,28 Feb 2019 08:36:36 GMT       //响应头
+Server:BWS/1.0
+Content-Type:text/html;charset=utf-8
+Cache-Control:private
+Expires:Thu, 28 Feb 2019 08:36:36 GMT
+Content-Encoding：gzip
+Set-Cookie:H_PS_PSSOD=2022_1438_1944_1788;path:/;domain=.baidu.com
+Connection:Keep-Alive
+                                        //空白行，代表响应头结束
+<html>                                  //响应正文或者叫消息主题
+      <head>
+            <title>
+                  Index.htnl
+            </title>
+      </head>
+......
+</html>
+```
+
+HTTP响应的第一行为响应行，其中有HTTP版本（HTTP1.1）、状态码（200）以及消息"OK"。  
+第二行至末尾的空白行为响应头，由服务器向客户端发送。  
+消息报头之后是响应正文，是服务器向客户端发送的HTML数据。
+
+#### 1.3.2 HTTP请求方法
+
+HTTP请求的方法非常多，其中GET、POST最常见。下面是HTTP请求方法的详细介绍。  
+（1）**GET**  
+GET方法用于获取请求页面的指定信息（以实体的格式）。如果请求资源为动态脚本（非HTML），那么返回文本是Web容器解析后的HTML源代码，而不是源文件。例如请求index.jsp，返回的不是index.jsp的源文件，而是经过解析后的HTML代码。
+如下HTTP请求：
+
+``` http
+GET /index.php?id=1 HTTP/1.1
+HOST:www.baidu.com
+```
+
+使用GET请求index.php，并且id参数为1，在服务器端脚本语言中可以选择性地接收这些参数，比如id=1&name=admin，一般都是由开发者内定好的参数项目才会接收，比如开发者只接收id参数项目，若加了其他参数项，如：
+
+``` http
+Index.php?id=1&username=admin
+```
+
+服务器端脚本不会理会你加入的内容，依然只会接收id参数，并且去查询数据，最终向服务器端发送解析过的HTML数据，不会因为你的干扰而乱套。  
+
+（2）**HEAD**  
+HEAD方法除了服务器不能再响应里返回消息主体外，其他都与GET方法相同。此方法经常被用来测试超文本链接的有效性、可访问性和最近的改变。攻击者编写扫描工具时，就常用此方法，因为只测试资源是否存在，而不用返回消息主题，所以速度一定是最快的。一个经典的HTTP HEAD请求如下：
+
+``` http
+HEAD /index.php HTTP/1.1
+HOST:www.baidu.com
+```
+
+（3）**POST**  
+POST方法也与GET方法相似，但最大的区别在于，GET方法没有请求内容，而POST是有请求内容的。POST请求最多用于向服务器发送大量的数据。GET虽然也能发送数据，但是有大小（长度）的限制，并且GET请求会将发送的数据显示在浏览器端，而POST则不会，所以安全性相对来说高一点。  
+例如，上传文件、提交留言等，只要是向服务器传输大量的数据，通常都会使用POST请求。一个经典的HTTP POST请求如下：
+
+``` http
+POST /login.php HTTP/1.1
+HOST:www.baidu.com
+Content-Length:26
+Accept:text/html,application/xhtml+xml,application/xml;
+Origin:http://home.cto.com
+User-Agent:Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.17 Chrome/24.0Safari/537.17 SE 2.X MetaSr 1.0
+Content-Type:application/x-www-form-urlencoded
+Accept-Language:zh-CN,zh;q=0.8
+Accept-Charset:GBK,utf-8;q=0.7,*,q=0.3
+
+user=admin&password=admin
+```
+
+用POST方法向服务器请求login.php，并且传递参数user=admin&password=amdin。
+
+（4）**PUT**  
+PUT方法用于请求服务器把请求中的实体存储在请求资源下，如果请求资源已经在服务器中存在，那么将会用此请求汇总的数据替换原先的数据，作为指定资源的最新修改版。如果请求指定的资源不存在，将会创建这个资源，且数据为请求正文，请求如下：
+
+``` http
+PUT /input.txt
+HOST:www.baidu.com
+Content-Length:6
+123456
+```
+
+这段HTTP PUT请求将会在主机根目录下创建input.txt，内容为123456。通常情况下，服务器都会关闭PUT方法，因为它会为服务器建立文件，属于危险的方法之一。
+
+（5）**DELETE**  
+DELETE方法用于请求源服务器删除请求的指定资源。服务器一般都会关闭此方法，因为客户端可以进行删除文件操作，属于危险方法之一。  
+（6）**TRACE**  
+TRACE方法被用于激发一个远程的应用层的请求消息回路，也就是说，回显服务器收到的请求。TRACE方法允许客户端去了解数据被请求链的另一端接收的情况，并且利用那些数据信息去测试或诊断。但此方法非常少见。  
+（7）**CONNECT**  
+HTTP1.1协议规范保留了CONNECT方法，此方法是为了用于能动态切换到隧道的代理。  
+（8）**OPTIONS**  
+OPTIONS方法是用于请求获得由URI标识的资源在请求/响应的通信过程中可以使用的功能选项。通过这个方法，客户端可以在采取具体资源请求之前，决定对该资源采取何种必要措施，或者了解服务器的性能。  
+HTTP OPTIONS请求如下：
+
+``` http
+OPTIONS / HTTP/1.1
+HOST:www.baidu.com
+```
+
+以上为HTTP1.1标准请求方法，详情请参照`“https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html”`，但HTTP中的请求方法还不止这些，例如WebDAV。WebDAV（Web-based Distributed Authoring and Versioning）是一种基于HTTP/1.1协议的通信协议，它扩展了HTTP 1.1，在GET、POST、HEAD等几个HTTP标准方法以外添加了一些新的方法，使应用程序可直接对Web Server进行读写，并执行写文件锁定（Locking）和解锁（Unlock）、文件复制（Copy）、文件移动（Move）。另外，还可以支持文件的版本控制。  
+
+#### 1.3.3 HTTP状态码
+
+当客户端发出HTTP请求，服务器端接收后，会向客户端发送响应信息，其中，HTTP响应中的第一行中，最重要的一点就是HTTP的状态码，内容如下：  
+
+``` http
+HTTP/1.1 200 OK
+```
+
+此响应的状态码为200，在HTTP协议中表示请求成功。HTTP协议中的状态码有三位数字组成，第一位数字定义了响应的类别，且只有以下5种。
+
+* 1xx：信息提示，表示请求已被成功接收，继续处理。其范围为100~101。
+* 2xx：成功，服务器成功地处理了请求。其范围为200~206。
+* 3xx：重定向，重定向状态码用于告诉浏览器客户端，它们访问的资源已被移动，并告诉客户端新的资源地址位置。这时，浏览器将重新对新资源发起请求。其范围为300~305。
+* 4xx：客户端错误状态码，有时客户端会发送一些服务器无法处理的东西，比如格式错误的请求，或者最常见的是，请求一个不存在的URL。其范围为400~415。
+* 5xx：有时候客户端发送了一条有效请求，但Web服务器自身却出错了，可能是Web服务器运行出错了，或者网站都挂了。5xx就是用来描述服务器内部错误的，其范围为500~505。
+
+常见的状态码描述如下：
+
+``` html
+200：客户端请求成功，是最常见的状态。
+302：重定向。
+404：请求资源不存在，是最常见的状态。
+400：客户端请求有语法错误，不能被服务器所理解。
+401：请求未经授权。
+403：服务器收到请求，但是拒绝提供服务。
+500：服务器内部错误，是最常见的错误。
+503：服务器当前不能处理客户端的请求，一段时间后可能恢复正常。
+```
+
+#### 1.3.4 HTTP消息
+
+HTTP消息又称为HTTP头（HTTP header），由四部分组成，分别是请求头、响应头、普通头和实体头。从名称上看，我们就可以知道它们所处的位置。  
+
+（1）**请求头**  
+请求头只出现在HTTP请求中，请求报头允许客户端向服务器端传递请求的附加信息和客户端自身的信息。常用的HTTP请求头如下。
+
+* Host  
+Host请求报头域主要用于指定被请求资源的Internet主机架和端口号，例如：HOST:www.baidu.com:80。  
+
+* User-Agent  
+User-Agent请求报头域允许客户端将它的操作系统、浏览器和其他属性告诉服务器。登录一些网站时，很多时候都可以见到显示我们的浏览器、系统信息，这些都是此头的作用，如：User-Agent:My privacy。  
+
+* Referer  
+Referer包含一个URL，代表当前访问URL的上一个URL，也就是说，用户是从什么地方来到本页面。如：Referer:www.baidu.com/login.php，代表用户从login.php来到当前页面。  
+
+* Cookie  
+Cookie是非常重要的请求头，它是一段文本，常用来表示请求者身份等。  
+
+* Range  
+Range可以请求实体的部分内容，多线程下载一定会用到此请求头。例如：  
+表示头500字节：bytes=0~499  
+表示第二个500字节：bytes=500~999  
+表示最后500字节：bytes=-500  
+表示500字节以后的范围：bytes=500-  
+
+* x-forward-for  
+x-forward-for即XXF头，它代表请求端的IP，可以有多个，中间以逗号隔开。  
+
+* Accept  
+Accept请求报头域用于指定客户端接收哪些MIME类型的信息，如Accept：text/html，表明客户端希望接收HTML文本。  
+
+* Accept-Charset  
+Accept-Charset请求报头域用于指定客户端接收的字符集。例如：Accept-Charset:iso-8859-1，gb2312。如果在请求消息中没有设置这个域，默认是任何字符集都可以接收。  
+
+（2）**响应头**  
+响应头是服务器根据请求向客户端发送的HTTP头。常见的HTTP响应头如下。  
+
+* Server  
+服务器所使用的Web服务器名称，如Server:Apache/1.3.6(Unix)，攻击者通过查看此头，可以探测Web服务器名称。所以，建议在服务器端进行修改此头的信息。  
+
+* Set-Cookie  
+向客户端设置Cookie，通过查看此头，可以清楚地看到服务器向客户端发送的Cookie信息。  
+
+* Last-Modified  
+服务器通过这个头告诉浏览器，资源的最后修改时间。  
+
+* Location  
+服务器通过这个头告诉浏览器去访问哪个页面，浏览器接收到这个请求之后，通常会立刻访问Location头所指向的页面。这个头通常配合302状态码使用。  
+
+* Refresh  
+服务器通过Refresh头告诉浏览器定时刷新浏览器。  
+
+（3）**普通头**  
+在普通报头中，有少数报头域用于所有的请求和响应消息，但并不用于被传输的实体，只用于传输的消息。例如：Date，表示消息产生的日期和时间。Connection，允许发送指定连接的选项。例如，指定连接是连续的，或者指定“close”选项，通知服务器，在响应完成后，关闭连接。Cache-Control，用于指定缓存指令，缓存指令是单向的，且是独立的。  
+
+（4）**实体头**  
+请求和响应消息都可以传送一个实体头。实体头定义了关于实体正文和请求所标识的资源的元信息。元信息也就是实体内容的属性，包括实体信息类型、长度、压缩方法、最后一次修改时间等。常见的实体头如下。  
+
+* Content-Type
+Content-Type实体头用于向接收方指示实体的介质类型。  
+* Content-Encoding  
+Content-Encoding头被用作媒体类型的修饰符，它的值指示了已经被应用到实体正文的附加内容的编码，因而要获得Content-Type报头域中所引用的媒体类型，必须采用相应的解码机制。  
+
+* Content-Length  
+Content-Length实体报头用于指明实体正文的长度，以字节方式存储的十进制数字来表示。  
+
+* Last-Modified  
+Last-Modified实体报头用于指示资源的最后修改日期和时间。
